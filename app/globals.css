@@ -71,3 +71,13 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .header-button {
+    @apply cursor-pointer p-1 border border-transparent hover:border-white rounded-[2px];
+  }
+
+  .h1-bold {
+    @apply font-bold text-2xl lg:text-3xl;
+  }
+}
