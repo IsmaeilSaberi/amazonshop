@@ -30,3 +30,9 @@ const NUMBER_FORMATTER = new Intl.NumberFormat('en-US')
 export function formatNumber(number: number) {
   return NUMBER_FORMATTER.format(number)
 }
+
+export const round2 = (num: number) =>
+  Math.round((num + Number.EPSILON) * 100) / 100
+
+export const generateId = () =>
+  Array.from({ length: 24 }, () => Math.floor(Math.random() * 10)).join('')
