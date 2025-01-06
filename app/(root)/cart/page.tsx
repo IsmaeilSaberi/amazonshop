@@ -180,7 +180,7 @@ export default function CartPage() {
                     onClick={() => router.push('/checkout')}
                     className='rounded-full w-full'
                   >
-                    {'Cart.Proceed to Checkout'}
+                    Checkout
                   </Button>
                 </CardContent>
               </Card>
