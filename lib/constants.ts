@@ -14,3 +14,33 @@ export const PAGE_SIZE = Number(process.env.PAGE_SIZE || 9)
 export const FREE_SHIPPING_MIN_PRICE = Number(
   process.env.FREE_SHIPPING_MIN_PRICE || 35
 )
+
+export const AVAILABLE_PAYMENT_METHODS = [
+  { name: 'PayPal', commission: 0, isDefault: true },
+  { name: 'Stripe', commission: 0, isDefault: false },
+  { name: 'Cash On Delivery', commission: 0, isDefault: false },
+]
+
+export const DEFAULT_PAYMENT_METHOD =
+  process.env.DEFAULT_PAYMENT_METHOD || 'PayPal'
+
+export const AVAILABLE_DELIVERY_DATES = [
+  {
+    name: 'Tommorrow',
+    daysToDeliver: 1,
+    shippingPrice: 12.9,
+    freeShippingMinPrice: 0,
+  },
+  {
+    name: 'Next 3 Days',
+    daysToDeliver: 3,
+    shippingPrice: 6.9,
+    freeShippingMinPrice: 0,
+  },
+  {
+    name: 'Next 5 Days',
+    daysToDeliver: 5,
+    shippingPrice: 4.9,
+    freeShippingMinPrice: 35,
+  },
+]
