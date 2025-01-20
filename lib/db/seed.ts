@@ -7,6 +7,7 @@ import { loadEnvConfig } from '@next/env'
 import User from './models/user.model'
 import Review from './models/review.model'
 import Order from './models/order.model'
+import WebPage from './models/web-page.model'
 import { IOrderInput, OrderItem, ShippingAddress } from '@/types'
 import {
   calculateFutureDate,
@@ -20,7 +21,7 @@ loadEnvConfig(cwd())
 
 const main = async () => {
   try {
-    const { products, users, reviews } = data
+    const { products, users, reviews, webPages } = data
     await connectToDataBase(process.env.MONGODB_URI)
 
     await User.deleteMany()
@@ -28,6 +29,9 @@ const main = async () => {
 
     await Product.deleteMany()
     const createdProducts = await Product.insertMany(products)
+
+    await WebPage.deleteMany()
+    await WebPage.insertMany(webPages)
 
     await Review.deleteMany()
     const rws = []
@@ -70,6 +74,7 @@ const main = async () => {
       createdProducts,
       createdReviews,
       createdOrders,
+      webPages,
       message: 'Seeded database successfully',
     })
     process.exit(0)
