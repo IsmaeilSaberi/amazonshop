@@ -1,7 +1,10 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 
+import { auth } from '@/auth'
+import DeleteDialog from '@/components/shared/delete-dialog'
 import Pagination from '@/components/shared/pagination'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -10,38 +13,38 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { getMyOrders } from '@/lib/actions/order.actions'
-import { IOrder } from '@/lib/db/models/order.model'
+import { deleteOrder, getAllOrders } from '@/lib/actions/order.actions'
 import { formatDateTime, formatId } from '@/lib/utils'
-import BrowsingHistoryList from '@/components/shared/browsing-history-list'
+import { IOrderList } from '@/types'
 import ProductPrice from '@/components/shared/product/product-price'
 
-const PAGE_TITLE = 'Your Orders'
 export const metadata: Metadata = {
-  title: PAGE_TITLE,
+  title: 'Admin Orders',
 }
 export default async function OrdersPage(props: {
   searchParams: Promise<{ page: string }>
 }) {
   const searchParams = await props.searchParams
-  const page = Number(searchParams.page) || 1
-  const orders = await getMyOrders({
-    page,
+
+  const { page = '1' } = searchParams
+
+  const session = await auth()
+  if (session?.user.role !== 'Admin')
+    throw new Error('Admin permission required')
+
+  const orders = await getAllOrders({
+    page: Number(page),
   })
   return (
-    <div>
-      <div className='flex gap-2'>
-        <Link href='/account'>Your Account</Link>
-        <span>›</span>
-        <span>{PAGE_TITLE}</span>
-      </div>
-      <h1 className='h1-bold pt-4'>{PAGE_TITLE}</h1>
+    <div className='space-y-2'>
+      <h1 className='h1-bold'>Orders</h1>
       <div className='overflow-x-auto'>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Id</TableHead>
               <TableHead>Date</TableHead>
+              <TableHead>Buyer</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Paid</TableHead>
               <TableHead>Delivered</TableHead>
@@ -49,24 +52,17 @@ export default async function OrdersPage(props: {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.data.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6} className=''>
-                  You have no orders.
-                </TableCell>
-              </TableRow>
-            )}
-            {orders.data.map((order: IOrder) => (
+            {orders.data.map((order: IOrderList) => (
               <TableRow key={order._id}>
-                <TableCell>
-                  <Link href={`/account/orders/${order._id}`}>
-                    {formatId(order._id)}
-                  </Link>
-                </TableCell>
+                <TableCell>{formatId(order._id)}</TableCell>
                 <TableCell>
                   {formatDateTime(order.createdAt!).dateTime}
                 </TableCell>
                 <TableCell>
+                  {order.user ? order.user.name : 'Deleted User'}
+                </TableCell>
+                <TableCell>
+                  {' '}
                   <ProductPrice price={order.totalPrice} plain />
                 </TableCell>
                 <TableCell>
@@ -79,21 +75,20 @@ export default async function OrdersPage(props: {
                     ? formatDateTime(order.deliveredAt).dateTime
                     : 'No'}
                 </TableCell>
-                <TableCell>
-                  <Link href={`/account/orders/${order._id}`}>
-                    <span className='px-2'>Details</span>
-                  </Link>
+                <TableCell className='flex gap-1'>
+                  <Button asChild variant='outline' size='sm'>
+                    <Link href={`/admin/orders/${order._id}`}>Details</Link>
+                  </Button>
+                  <DeleteDialog id={order._id} action={deleteOrder} />
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
         {orders.totalPages > 1 && (
-          // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-          <Pagination page={page} totalPages={orders?.totalPages!} />
+          <Pagination page={page} totalPages={orders.totalPages!} />
         )}
       </div>
-      <BrowsingHistoryList className='mt-16' />
     </div>
   )
 }

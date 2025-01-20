@@ -25,6 +25,7 @@ import { ProductInputSchema, ProductUpdateSchema } from '@/lib/validator'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toSlug } from '@/lib/utils'
 import { IProductInput } from '@/types'
+import { Trash } from 'lucide-react'
 
 const productDefaultValues: IProductInput =
   process.env.NODE_ENV === 'development'
@@ -264,15 +265,31 @@ const ProductForm = ({
                 <Card>
                   <CardContent className='space-y-2 mt-2 min-h-48'>
                     <div className='flex justify-start items-center space-x-2'>
+                      {/* copilot prompt: add delete button as shadcn Button with TrashIcon from lucide-react to remove the image from images array */}
                       {images.map((image: string) => (
-                        <Image
-                          key={image}
-                          src={image}
-                          alt='product image'
-                          className='w-20 h-20 object-cover object-center rounded-sm'
-                          width={100}
-                          height={100}
-                        />
+                        <Card key={image} className='relative '>
+                          <Image
+                            src={image}
+                            alt='product image'
+                            className='w-36 h-36 object-cover object-center rounded-sm'
+                            width={100}
+                            height={100}
+                          />
+                          <Button
+                            variant={'destructive'}
+                            className='absolute top-1 right-1'
+                            type='button'
+                            size='icon'
+                            onClick={() => {
+                              form.setValue(
+                                'images',
+                                images.filter((img) => img !== image)
+                              )
+                            }}
+                          >
+                            <Trash />
+                          </Button>
+                        </Card>
                       ))}
                       <FormControl>
                         <UploadButton

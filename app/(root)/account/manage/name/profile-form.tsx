@@ -39,12 +39,12 @@ export const ProfileForm = () => {
         description: res.message,
       })
 
-    const { data, message } = res
+    const { message } = res
     const newSession = {
       ...session,
       user: {
         ...session?.user,
-        name: data.name,
+        name: session?.user?.name ?? '',
       },
     }
     await update(newSession)
