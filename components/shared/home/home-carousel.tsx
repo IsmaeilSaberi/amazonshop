@@ -11,21 +11,17 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel'
 import Link from 'next/link'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { useTranslations } from 'next-intl'
+import { ICarousel } from '@/types'
 
-export function HomeCarousel({
-  items,
-}: {
-  items: {
-    image: string
-    url: string
-    title: string
-    buttonCaption: string
-  }[]
-}) {
+export function HomeCarousel({ items }: { items: ICarousel[] }) {
   const plugin = React.useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true })
   )
+
+  const t = useTranslations('Home')
 
   return (
     <Carousel
@@ -48,11 +44,15 @@ export function HomeCarousel({
                   priority
                 />
                 <div className='absolute w-1/3 left-16 md:left-32 top-1/2 transform -translate-y-1/2'>
-                  <h2 className='text-xl md:text-6xl font-bold mb-4 text-primary'>
-                    {item.title}
+                  <h2
+                    className={cn(
+                      'text-xl md:text-6xl font-bold mb-4 text-primary  '
+                    )}
+                  >
+                    {t(`${item.title}`)}
                   </h2>
                   <Button className='hidden md:block'>
-                    {item.buttonCaption}
+                    {t(`${item.buttonCaption}`)}
                   </Button>
                 </div>
               </div>

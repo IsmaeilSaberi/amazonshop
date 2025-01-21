@@ -12,7 +12,7 @@ import Review, { IReview } from '../db/models/review.model'
 import { formatError } from '../utils'
 import { ReviewInputSchema } from '../validator'
 import { IReviewDetails } from '@/types'
-import { PAGE_SIZE } from '../constants'
+import { getSetting } from './setting.actions'
 
 export async function createUpdateReview({
   data,
@@ -111,7 +111,10 @@ export async function getReviews({
   limit?: number
   page: number
 }) {
-  limit = limit || PAGE_SIZE
+  const {
+    common: { pageSize },
+  } = await getSetting()
+  limit = limit || pageSize
   await connectToDataBase()
   const skipAmount = (page - 1) * limit
   const reviews = await Review.find({ product: productId })

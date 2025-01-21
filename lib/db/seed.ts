@@ -1,37 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import data from '@/lib/data'
 import { connectToDataBase } from '.'
+import User from './models/user.model'
 import Product from './models/product.model'
+import Review from './models/review.model'
 import { cwd } from 'process'
 import { loadEnvConfig } from '@next/env'
-import User from './models/user.model'
-import Review from './models/review.model'
 import Order from './models/order.model'
-import WebPage from './models/web-page.model'
-import { IOrderInput, OrderItem, ShippingAddress } from '@/types'
 import {
   calculateFutureDate,
   calculatePastDate,
   generateId,
   round2,
 } from '../utils'
-import { AVAILABLE_DELIVERY_DATES } from '../constants'
+import WebPage from './models/web-page.model'
+import Setting from './models/setting.model'
+import { OrderItem, IOrderInput, ShippingAddress } from '@/types'
 
 loadEnvConfig(cwd())
 
 const main = async () => {
   try {
-    const { products, users, reviews, webPages } = data
+    const { users, products, reviews, webPages, settings } = data
     await connectToDataBase(process.env.MONGODB_URI)
 
     await User.deleteMany()
     const createdUser = await User.insertMany(users)
 
-    await Product.deleteMany()
-    const createdProducts = await Product.insertMany(products)
+    await Setting.deleteMany()
+    const createdSetting = await Setting.insertMany(settings)
 
     await WebPage.deleteMany()
     await WebPage.insertMany(webPages)
+
+    await Product.deleteMany()
+    const createdProducts = await Product.insertMany(
+      products.map((x) => ({ ...x, _id: undefined }))
+    )
 
     await Review.deleteMany()
     const rws = []
@@ -68,13 +73,12 @@ const main = async () => {
       )
     }
     const createdOrders = await Order.insertMany(orders)
-
     console.log({
       createdUser,
       createdProducts,
       createdReviews,
       createdOrders,
-      webPages,
+      createdSetting,
       message: 'Seeded database successfully',
     })
     process.exit(0)
@@ -175,14 +179,15 @@ export const calcDeliveryDateAndPriceForSeed = ({
   items: OrderItem[]
   shippingAddress?: ShippingAddress
 }) => {
+  const { availableDeliveryDates } = data.settings[0]
   const itemsPrice = round2(
     items.reduce((acc, item) => acc + item.price * item.quantity, 0)
   )
 
   const deliveryDate =
-    AVAILABLE_DELIVERY_DATES[
+    availableDeliveryDates[
       deliveryDateIndex === undefined
-        ? AVAILABLE_DELIVERY_DATES.length - 1
+        ? availableDeliveryDates.length - 1
         : deliveryDateIndex
     ]
 
@@ -195,10 +200,10 @@ export const calcDeliveryDateAndPriceForSeed = ({
       (taxPrice ? round2(taxPrice) : 0)
   )
   return {
-    AVAILABLE_DELIVERY_DATES,
+    availableDeliveryDates,
     deliveryDateIndex:
       deliveryDateIndex === undefined
-        ? AVAILABLE_DELIVERY_DATES.length - 1
+        ? availableDeliveryDates.length - 1
         : deliveryDateIndex,
     itemsPrice,
     shippingPrice,
